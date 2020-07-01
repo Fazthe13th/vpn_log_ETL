@@ -96,7 +96,7 @@ class ParseLog:
             except IndexError as e:
                 print('Invalid data in user access history: ' + str(e))
         except Exception as e:
-            print('Line skipped: ' + str(e))
+            print('Log format mismatch: ' + str(e))
 
     @classmethod
     def login_fail_parse(self, line):
@@ -129,6 +129,8 @@ class ParseLog:
             )
         except IndexError as e:
             print('Invalid data in failed login: ' + str(e))
+        except Exception as e:
+            print('Log format mismatch: ' + str(e))
 
     @classmethod
     def user_logout_parse(cls, line):
@@ -153,6 +155,8 @@ class ParseLog:
             dataload.user_logout(username[1], logouttime)
         except IndexError as e:
             print('Invalid data during user logout: ' + str(e))
+        except Exception as e:
+            print('Log format mismatch: ' + str(e))
 
     @classmethod
     def url_filter_parse(cls, line):
@@ -213,3 +217,5 @@ class ParseLog:
             )
         except IndexError as e:
             print('Invalid data during user activity load: ' + str(e))
+        except Exception as e:
+            print('Log format mismatch: ' + str(e))
