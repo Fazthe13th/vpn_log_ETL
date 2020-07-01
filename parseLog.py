@@ -13,37 +13,43 @@ dataload = DataLoad()
 
 class ParseLog:
     dataload = DataLoad()
+    "Unnecessary if reading log in real time"
+    # def read_log(self):
+    #     file = os.getenv('file_name')
+    #     chunksize = 100000
+    #     j = 0
+    #     # total_line_processed = 0
+    #     # total_line_ignored = 0
+    #     for df in pd.read_csv(file, sep='\t', header=None, error_bad_lines=False, engine='python', chunksize=chunksize,
+    #                           iterator=True):
+    #         j = j + 1
+    #         self.process_chunk(df)
 
-    def read_log(self):
-        file = os.getenv('file_name')
-        chunksize = 100000
-        j = 0
-        # total_line_processed = 0
-        # total_line_ignored = 0
-        for df in pd.read_csv(file, sep='\t', header=None, error_bad_lines=False, engine='python', chunksize=chunksize,
-                              iterator=True):
-            j = j + 1
-            self.process_chunk(df)
-
-    @classmethod
-    def process_chunk(cls, chunk_df):
-        "process chunks "
-        # chunk_line_processed = 0
-        # chunk_line_ignored = 0
-        for index, row in chunk_df.iterrows():
-            cls.read_lines(row[0])
-
+    # @classmethod
+    # def process_chunk(cls, chunk_df):
+    #     "process chunks "
+    #     # chunk_line_processed = 0
+    #     # chunk_line_ignored = 0
+    #     for index, row in chunk_df.iterrows():
+    #         cls.read_lines(row[0])
+    "Reading log line"
     @classmethod
     def read_lines(cls, line):
-
+        ignore_flag = 1
         if line.find('User login succeeded') != -1:
             cls.user_login_parse(line)
+            ignore_flag = 0
         if line.find('The user logged out') != -1:
             cls.user_logout_parse(line)
+            ignore_flag = 0
         if line.find('The URL filtering policy was matched') != -1:
             cls.url_filter_parse(line)
+            ignore_flag = 0
         if line.find('RESULT:Authentication fail') != -1:
             cls.login_fail_parse(line)
+            ignore_flag = 0
+        if ignore_flag == 1:
+            print('Line ignored. Pattern did not match')
 
     @classmethod
     def user_login_parse(cls, line):
