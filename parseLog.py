@@ -2,7 +2,7 @@ import pandas as pd
 from datetime import datetime
 import re
 from database import DataLoad
-import os
+import os, logging
 from dotenv import load_dotenv
 
 
@@ -13,6 +13,7 @@ dataload = DataLoad()
 
 class ParseLog:
     dataload = DataLoad()
+    logging.basicConfig(filename='vpn_script.log', level=logging.INFO)
     "Unnecessary if reading log in real time"
     # def read_log(self):
     #     file = os.getenv('file_name')
@@ -35,6 +36,7 @@ class ParseLog:
     "Reading log line"
     @classmethod
     def read_lines(cls, line):
+        logging.info(line)
         ignore_flag = 1
         if line.find('User login succeeded') != -1:
             cls.user_login_parse(line)
@@ -50,6 +52,7 @@ class ParseLog:
             ignore_flag = 0
         if ignore_flag == 1:
             print('Line ignored. Pattern did not match')
+            logging.info('Line ignored. Pattern did not match')
 
     @classmethod
     def user_login_parse(cls, line):
@@ -81,6 +84,7 @@ class ParseLog:
                 )
             except IndexError as e:
                 print('Invalid data in upsert user: ' + str(e))
+                logging.info('Invalid data in upsert user: ' + str(e))
             try:
                 dataload.insert_user_access_hist(
                     username[1],
@@ -95,8 +99,10 @@ class ParseLog:
                 )
             except IndexError as e:
                 print('Invalid data in user access history: ' + str(e))
+                logging.info('Invalid data in user access history: ' + str(e))
         except Exception as e:
             print('Log format mismatch: ' + str(e))
+            logging.info('Log format mismatch: ' + str(e))
 
     @classmethod
     def login_fail_parse(self, line):
@@ -129,8 +135,10 @@ class ParseLog:
             )
         except IndexError as e:
             print('Invalid data in failed login: ' + str(e))
+            logging.info('Invalid data in failed login: ' + str(e))
         except Exception as e:
             print('Log format mismatch: ' + str(e))
+            logging.info('Log format mismatch: ' + str(e))
 
     @classmethod
     def user_logout_parse(cls, line):
@@ -155,8 +163,10 @@ class ParseLog:
             dataload.user_logout(username[1], logouttime)
         except IndexError as e:
             print('Invalid data during user logout: ' + str(e))
+            logging.info('Invalid data during user logout: ' + str(e))
         except Exception as e:
             print('Log format mismatch: ' + str(e))
+            logging.info('Log format mismatch: ' + str(e))
 
     @classmethod
     def url_filter_parse(cls, line):
@@ -217,5 +227,7 @@ class ParseLog:
             )
         except IndexError as e:
             print('Invalid data during user activity load: ' + str(e))
+            logging.info('Invalid data during user activity load: ' + str(e))
         except Exception as e:
             print('Log format mismatch: ' + str(e))
+            logging.info('Log format mismatch: ' + str(e))
