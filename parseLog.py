@@ -2,7 +2,8 @@ import pandas as pd
 from datetime import datetime
 import re
 from database import DataLoad
-import os, logging
+import os
+import logging
 from dotenv import load_dotenv
 
 
@@ -15,6 +16,7 @@ class ParseLog:
     dataload = DataLoad()
     logging.basicConfig(filename='vpn_script.log', level=logging.INFO)
     "Unnecessary if reading log in real time"
+
     # def read_log(self):
     #     file = os.getenv('file_name')
     #     chunksize = 100000
@@ -173,7 +175,7 @@ class ParseLog:
         "Use Regex to read the lines"
         url_info_pattern = r"(?=SyslogId).*(?<!(\)))"
         "Fix time"
-        monthday_pattern = r"^[JFMASOND][aepuco][nbrylgptvc].\d+[ ]"
+        monthday_pattern = r"^[JFMASOND][aepuco][nbrylgptvc]..\d+[ ]"
         try:
             time_pattern = r"\d+[:]\d+[:]\d+"
             month_day = re.search(monthday_pattern, line, flags=0)
