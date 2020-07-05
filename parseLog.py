@@ -38,18 +38,22 @@ class ParseLog:
     "Reading log line"
     @classmethod
     def read_lines(cls, line):
-        logging.info(line)
+
         ignore_flag = 1
         if line.find('User login succeeded') != -1:
+            logging.info(line)
             cls.user_login_parse(line)
             ignore_flag = 0
         if line.find('The user logged out') != -1:
+            logging.info(line)
             cls.user_logout_parse(line)
             ignore_flag = 0
         if line.find('The URL filtering policy was matched') != -1:
+            logging.info(line)
             cls.url_filter_parse(line)
             ignore_flag = 0
         if line.find('RESULT:Authentication fail') != -1:
+            logging.info(line)
             cls.login_fail_parse(line)
             ignore_flag = 0
         if ignore_flag == 1:
