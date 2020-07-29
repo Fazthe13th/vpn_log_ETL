@@ -32,7 +32,7 @@ class DataLoad:
             return "Database not connected"
         cursor = vpn_log.cursor()
         try:
-            insert_user_query = """INSERT INTO vpn_log.vpn_users (user_name, last_assigned_ip,last_login_time, org_id) VALUES (%s, %s, %s)"""
+            insert_user_query = """INSERT INTO vpn_log.vpn_users (user_name, last_assigned_ip,last_login_time, org_id) VALUES (%s, %s, %s, %s)"""
             val = (username, last_ip, login_time, org_id)
             cursor.execute(insert_user_query, val)
             vpn_log.commit()
@@ -94,7 +94,7 @@ class DataLoad:
             try:
                 insert_login_success_query = """INSERT INTO vpn_log.vpn_user_access_history 
         (access_hist_uuid,user_id,login_time,Vsync,source_ip,source_mac,logon_model,auth_mode,device_category,parent_group,org_id) 
-        VALUES (%s, %s, %s,%s, %s, %s,%s, %s, %s, %s)"""
+        VALUES (%s, %s, %s,%s, %s, %s,%s, %s, %s, %s, %s)"""
                 val = (str(uuid1()), user_id[0], logintime, Vsync, source_ip,
                        source_mac, logon_mode, auth_mode, device_category, parent_group, org_id)
                 cursor.execute(insert_login_success_query, val)
@@ -129,7 +129,7 @@ class DataLoad:
                 try:
                     insert_user_activity_query = """INSERT INTO vpn_log.vpn_user_activity 
           (activity_uuid,user_id,username,syslogID,Vsync,policy,src_ip,dst_ip,src_port,dst_port,src_zone,dst_zone,protocal,request_type,host,referer,url_access_time,org_id) 
-          VALUES (%s, %s, %s,%s, %s, %s,%s, %s, %s, %s, %s, %s, %s,%s, %s, %s, %s)"""
+          VALUES (%s, %s, %s,%s, %s, %s,%s, %s, %s, %s, %s, %s, %s,%s, %s, %s, %s, %s)"""
                     val = (str(uuid1()), user_id, user_name, syslogID, Vsync, policy, src_ip, dst_ip,
                            src_port, dst_port, src_zone, dst_zone, protocal, request_type, host, referer, url_time, org_id)
                     cursor.execute(insert_user_activity_query, val)
