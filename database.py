@@ -212,7 +212,7 @@ class DataLoad:
         cursor = vpn_log.cursor()
         try:
             select_org = "select org_id,org_name,ip_range_start,ip_range_end from org_wise_ip_dist where inet_aton(ip_range_start) <= inet_aton(%s) and inet_aton(ip_range_end) >= inet_aton(%s)"
-            cursor.execute(select_org, (ip_address, ip_address))
+            cursor.execute(select_org, (str(ip_address), str(ip_address)))
             org_info = cursor.fetchone()
             return org_info
         except Exception as e:
