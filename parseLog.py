@@ -80,7 +80,7 @@ class ParseLog:
             logintime_raw = str(login_time[1].strip())
             logintime = datetime.strptime(logintime_raw, '%Y/%m/%d %H:%M:%S')
             org_id, org_name = cls.org_info_query(source_ip)
-            print(org_id)
+            print(org_id, source_ip)
             # print(username,Vsync,source_mac,source_ip,logintime,logon_mode,auth_mode,device_category,parent_group,)
             "Data sent to database for query"
             try:
@@ -163,7 +163,7 @@ class ParseLog:
             # Vsync = user_logout_ifo_array[1].split('=')
             source_ip = user_logout_ifo_array[2].split('=')
             org_id, org_name = cls.org_info_query(source_ip)
-            print(org_id)
+            print(org_id, source_ip)
             # parent_group = user_logout_ifo_array[3].split('=')
             # login_time = user_logout_ifo_array[4].split('=')
             logout_time = user_logout_ifo_array[5].split('=')
@@ -221,7 +221,7 @@ class ParseLog:
             # print(url_time,syslogID,Vsync,policy,src_ip,src_port,src_zone,dst_ip,dst_port,dst_zone,protocal,request_type,host,referer)
             "Data sent to database for query"
             org_id, org_name = cls.org_info_query(src_ip)
-            print(org_id)
+            print(org_id, src_ip)
             dataload.vpn_user_activity_load(
                 url_time,
                 syslogID[1].strip('"'),
