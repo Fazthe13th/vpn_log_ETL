@@ -168,14 +168,14 @@ class DataLoad:
         vpn_log.close()
 
     def user_logout(self, *data):
-        username, logouttime = data
+        username, logouttime, org_id = data
         vpn_log = self.connect_database()
         if not vpn_log:
             return "Database not connected"
         cursor = vpn_log.cursor()
         print('in user logout')
-        select_user_id = "SELECT user_id FROM vpn_log.vpn_users where user_name = %s"
-        cursor.execute(select_user_id, (str(username),))
+        select_user_id = "SELECT user_id FROM vpn_log.vpn_users where user_name = %s and org_id=%s"
+        cursor.execute(select_user_id, (str(username), int(org_id)))
         user_id = cursor.fetchone()
         if user_id:
             last_login_query = "SELECT access_hist_uuid FROM vpn_log.vpn_user_access_history where user_id = %s order by login_time desc limit 1"
@@ -189,8 +189,8 @@ class DataLoad:
                 cursor.execute("""
         UPDATE vpn_log.vpn_users
         SET last_logout_time=%s
-        WHERE user_name=%s
-          """, (logouttime, username))
+        WHERE user_name=%s and org_id = %s
+          """, (logouttime, username, org_id))
                 vpn_log.commit()
                 print('Updated user logout info in users!')
             except Exception as e:
