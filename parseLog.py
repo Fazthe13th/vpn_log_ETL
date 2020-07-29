@@ -38,7 +38,6 @@ class ParseLog:
     "Reading log line"
     @classmethod
     def read_lines(cls, line):
-
         ignore_flag = 1
         if line.find('User login succeeded') != -1:
             logging.info(line)
@@ -80,13 +79,15 @@ class ParseLog:
             parent_group = user_login_ifo_array[8].split('=')
             logintime_raw = str(login_time[1].strip())
             logintime = datetime.strptime(logintime_raw, '%Y/%m/%d %H:%M:%S')
+            org_id, org_name = cls.org_info_query(source_ip)
             # print(username,Vsync,source_mac,source_ip,logintime,logon_mode,auth_mode,device_category,parent_group,)
             "Data sent to database for query"
             try:
                 dataload.upsert_user(
                     username[1],
                     source_ip[1],
-                    logintime
+                    logintime,
+                    org_id
                 )
             except IndexError as e:
                 print('Invalid data in upsert user: ' + str(e))
@@ -101,7 +102,8 @@ class ParseLog:
                     logon_mode[1],
                     auth_mode[1],
                     device_category[1],
-                    parent_group[1]
+                    parent_group[1],
+                    org_id
                 )
             except IndexError as e:
                 print('Invalid data in user access history: ' + str(e))
@@ -156,8 +158,10 @@ class ParseLog:
             user_logout_ifo_array = [x.strip('"')
                                      for x in user_logout_ifo.split(',')]
             username = user_logout_ifo_array[0].split('=')
+
             # Vsync = user_logout_ifo_array[1].split('=')
-            # source_ip = user_logout_ifo_array[2].split('=')
+            source_ip = user_logout_ifo_array[2].split('=')
+            org_id, org_name = cls.org_info_query(source_ip)
             # parent_group = user_logout_ifo_array[3].split('=')
             # login_time = user_logout_ifo_array[4].split('=')
             logout_time = user_logout_ifo_array[5].split('=')
@@ -166,7 +170,7 @@ class ParseLog:
             # print(username,logouttime)
             "Data sent to database for query"
 
-            dataload.user_logout(username[1], logouttime)
+            dataload.user_logout(username[1], logouttime, org_id)
         except IndexError as e:
             print('Invalid data during user logout: ' + str(e))
             logging.info('Invalid data during user logout: ' + str(e))
@@ -214,7 +218,7 @@ class ParseLog:
             referer = url_info_array[19].split('=')
             # print(url_time,syslogID,Vsync,policy,src_ip,src_port,src_zone,dst_ip,dst_port,dst_zone,protocal,request_type,host,referer)
             "Data sent to database for query"
-
+            org_id, org_name = cls.org_info_query(src_ip)
             dataload.vpn_user_activity_load(
                 url_time,
                 syslogID[1].strip('"'),
@@ -229,7 +233,8 @@ class ParseLog:
                 protocal[1].strip('"'),
                 request_type[1].strip('"'),
                 host[1].strip('"'),
-                referer[1].strip('"')
+                referer[1].strip('"'),
+                org_id
             )
         except IndexError as e:
             print('Invalid data during user activity load: ' + str(e))
@@ -237,3 +242,14 @@ class ParseLog:
         except Exception as e:
             print('Log format mismatch: ' + str(e))
             logging.info('Log format mismatch: ' + str(e))
+
+    @classmethod
+    def org_info_query(self, ip_address):
+        org_info = dataload.get_org_info_based_on_ip(ip_address)
+        if org_info:
+            org_id = org_info[0]
+            org_name = org_info[1]
+        else:
+            org_id = None
+            org_name = None
+        return org_id, org_name

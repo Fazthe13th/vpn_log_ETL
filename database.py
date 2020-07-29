@@ -26,14 +26,14 @@ class DataLoad:
 
     @classmethod
     def insert_user(cls, *data):
-        username, last_ip, login_time = data
+        username, last_ip, login_time, org_id = data
         vpn_log = cls.connect_database()
         if not vpn_log:
             return "Database not connected"
         cursor = vpn_log.cursor()
         try:
-            insert_user_query = """INSERT INTO vpn_log.vpn_users (user_name, last_assigned_ip,last_login_time) VALUES (%s, %s, %s)"""
-            val = (username, last_ip, login_time)
+            insert_user_query = """INSERT INTO vpn_log.vpn_users (user_name, last_assigned_ip,last_login_time, org_id) VALUES (%s, %s, %s)"""
+            val = (username, last_ip, login_time, org_id)
             cursor.execute(insert_user_query, val)
             vpn_log.commit()
             print('Added user info in users!')
@@ -44,7 +44,7 @@ class DataLoad:
 
     @classmethod
     def update_user(cls, *data):
-        username, last_ip, login_time = data
+        username, last_ip, login_time, org_id = data
         vpn_log = cls.connect_database()
         if not vpn_log:
             return "Database not connected"
@@ -53,8 +53,8 @@ class DataLoad:
             cursor.execute("""
       UPDATE vpn_log.vpn_users
       SET last_assigned_ip=%s,last_login_time=%s
-      WHERE user_name=%s
-        """, (last_ip, login_time, username))
+      WHERE user_name=%s and org_id = %s
+        """, (last_ip, login_time, username, org_id))
             vpn_log.commit()
             print('Updated user info in users!')
         except Exception as e:
@@ -64,39 +64,39 @@ class DataLoad:
         vpn_log.close()
 
     def upsert_user(self, *data):
-        username, last_ip, login_time = data
+        username, last_ip, login_time, org_id = data
         vpn_log = self.connect_database()
         if not vpn_log:
             return "Database not connected"
         cursor = vpn_log.cursor()
-        select_user_query = "SELECT * FROM vpn_log.vpn_users where user_name = %s"
-        cursor.execute(select_user_query, (str(username),))
+        select_user_query = "SELECT * FROM vpn_log.vpn_users where user_name = %s and org_id = %s"
+        cursor.execute(select_user_query, (str(username), int(org_id)))
         selected_user = cursor.fetchone()
         if selected_user:
-            self.update_user(username, last_ip, login_time)
+            self.update_user(username, last_ip, login_time, org_id)
         else:
-            self.insert_user(username, last_ip, login_time)
+            self.insert_user(username, last_ip, login_time, org_id)
         cursor.close()
         vpn_log.close()
 
     def insert_user_access_hist(self, *data):
-        username, Vsync, source_ip, source_mac, logintime, logon_mode, auth_mode, device_category, parent_group = data
+        username, Vsync, source_ip, source_mac, logintime, logon_mode, auth_mode, device_category, parent_group, org_id = data
         vpn_log = self.connect_database()
         if not vpn_log:
             return "Database not connected"
         cursor = vpn_log.cursor()
 
-        select_user_id = "SELECT user_id FROM vpn_log.vpn_users where user_name = %s"
-        cursor.execute(select_user_id, (str(username),))
+        select_user_id = "SELECT user_id FROM vpn_log.vpn_users where user_name = %s and org_id = %s"
+        cursor.execute(select_user_id, (str(username), int(org_id)))
         user_id = cursor.fetchone()
 
         if user_id:
             try:
                 insert_login_success_query = """INSERT INTO vpn_log.vpn_user_access_history 
-        (access_hist_uuid,user_id,login_time,Vsync,source_ip,source_mac,logon_model,auth_mode,device_category,parent_group) 
+        (access_hist_uuid,user_id,login_time,Vsync,source_ip,source_mac,logon_model,auth_mode,device_category,parent_group,org_id) 
         VALUES (%s, %s, %s,%s, %s, %s,%s, %s, %s, %s)"""
                 val = (str(uuid1()), user_id[0], logintime, Vsync, source_ip,
-                       source_mac, logon_mode, auth_mode, device_category, parent_group)
+                       source_mac, logon_mode, auth_mode, device_category, parent_group, org_id)
                 cursor.execute(insert_login_success_query, val)
                 vpn_log.commit()
                 print('Added user info in user access history!')
@@ -107,7 +107,7 @@ class DataLoad:
         vpn_log.close()
 
     def vpn_user_activity_load(self, *data):
-        url_time, syslogID, Vsync, policy, src_ip, dst_ip, src_port, dst_port, src_zone, dst_zone, protocal, request_type, host, referer = data
+        url_time, syslogID, Vsync, policy, src_ip, dst_ip, src_port, dst_port, src_zone, dst_zone, protocal, request_type, host, referer, org_id = data
         vpn_log = self.connect_database()
         if not vpn_log:
             return "Database not connected"
@@ -128,10 +128,10 @@ class DataLoad:
 
                 try:
                     insert_user_activity_query = """INSERT INTO vpn_log.vpn_user_activity 
-          (activity_uuid,user_id,username,syslogID,Vsync,policy,src_ip,dst_ip,src_port,dst_port,src_zone,dst_zone,protocal,request_type,host,referer,url_access_time) 
+          (activity_uuid,user_id,username,syslogID,Vsync,policy,src_ip,dst_ip,src_port,dst_port,src_zone,dst_zone,protocal,request_type,host,referer,url_access_time,org_id) 
           VALUES (%s, %s, %s,%s, %s, %s,%s, %s, %s, %s, %s, %s, %s,%s, %s, %s, %s)"""
                     val = (str(uuid1()), user_id, user_name, syslogID, Vsync, policy, src_ip, dst_ip,
-                           src_port, dst_port, src_zone, dst_zone, protocal, request_type, host, referer, url_time)
+                           src_port, dst_port, src_zone, dst_zone, protocal, request_type, host, referer, url_time, org_id)
                     cursor.execute(insert_user_activity_query, val)
                     vpn_log.commit()
                     print('Added user activity info!')
@@ -204,3 +204,17 @@ class DataLoad:
                 print('Logout function - access history tree Error happened: ' + str(e))
         cursor.close()
         vpn_log.close()
+
+    def get_org_info_based_on_ip(self, ip_address):
+        vpn_log = self.connect_database()
+        if not vpn_log:
+            return "Database not connected"
+        cursor = vpn_log.cursor()
+        try:
+            select_org = "select org_id,org_name,ip_range_start,ip_range_end from org_wise_ip_dist where inet_aton(ip_range_start) <= inet_aton(%s) and inet_aton(ip_range_end) >= inet_aton(%s)"
+            cursor.execute(select_org, (ip_address, ip_address))
+            org_info = cursor.fetchone()
+            return org_info
+        except Exception as e:
+            print('Error during org info fetch: ' + str(e))
+            return None
