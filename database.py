@@ -31,6 +31,7 @@ class DataLoad:
         if not vpn_log:
             return "Database not connected"
         cursor = vpn_log.cursor()
+        print('in user insert')
         try:
             insert_user_query = """INSERT INTO vpn_log.vpn_users (user_name, last_assigned_ip,last_login_time, org_id) VALUES (%s, %s, %s, %s)"""
             val = (username, last_ip, login_time, org_id)
@@ -49,6 +50,7 @@ class DataLoad:
         if not vpn_log:
             return "Database not connected"
         cursor = vpn_log.cursor()
+        print('in user update')
         try:
             cursor.execute("""
       UPDATE vpn_log.vpn_users
@@ -72,6 +74,7 @@ class DataLoad:
         select_user_query = "SELECT * FROM vpn_log.vpn_users where user_name = %s and org_id = %s"
         cursor.execute(select_user_query, (str(username), int(org_id)))
         selected_user = cursor.fetchone()
+        print('in user upsert')
         if selected_user:
             self.update_user(username, last_ip, login_time, org_id)
         else:
@@ -89,7 +92,7 @@ class DataLoad:
         select_user_id = "SELECT user_id FROM vpn_log.vpn_users where user_name = %s and org_id = %s"
         cursor.execute(select_user_id, (str(username), int(org_id)))
         user_id = cursor.fetchone()
-
+        print('in user access history')
         if user_id:
             try:
                 insert_login_success_query = """INSERT INTO vpn_log.vpn_user_access_history 
@@ -112,7 +115,7 @@ class DataLoad:
         if not vpn_log:
             return "Database not connected"
         cursor = vpn_log.cursor()
-
+        print('in user activity')
         select_user_info = "SELECT user_id, user_name FROM vpn_log.vpn_users where last_assigned_ip = %s"
         cursor.execute(select_user_info, (str(src_ip),))
         user_info = cursor.fetchone()
@@ -170,6 +173,7 @@ class DataLoad:
         if not vpn_log:
             return "Database not connected"
         cursor = vpn_log.cursor()
+        print('in user logout')
         select_user_id = "SELECT user_id FROM vpn_log.vpn_users where user_name = %s"
         cursor.execute(select_user_id, (str(username),))
         user_id = cursor.fetchone()
